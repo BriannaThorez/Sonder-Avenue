@@ -1,0 +1,6 @@
+{
+  "name": "Sonder Avenue",
+  "description": "A DCA v2.2-compliant WebGL2 neurosymbolic life simulator, 16-segment procedural Character Factory, and Persona Calculus engine set in a tilt-shift Bremerton waterfront diorama.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

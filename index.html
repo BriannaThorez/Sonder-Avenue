@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sonder Avenue — 1:1 PNW Procedural City &amp; DCA v2.2 Simulation Engine (Three.js r186)</title>
+    <meta name="description" content="A 1:1 metric gridless Pacific Northwest procedural city and neurosymbolic agent simulation engine built on Three.js r186, InstancedMesh/BatchedMesh, TSL shaders, EffectComposer (UnrealBloom + SMAA), and velocity-driven SkinnedMesh harnesses." />
+    <meta property="og:title" content="Sonder Avenue — 1:1 PNW Procedural City &amp; DCA v2.2 Simulation Engine (Three.js r186)" />
+    <meta property="og:description" content="A 1:1 metric gridless Pacific Northwest procedural city and neurosymbolic agent simulation engine built on Three.js r186, InstancedMesh/BatchedMesh, TSL shaders, EffectComposer (UnrealBloom + SMAA), and velocity-driven SkinnedMesh harnesses." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Canonical 3D Reference: https://threejs.org/docs/ (Pinned Three.js r186 Architecture) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+          "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.webgpu.js",
+          "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.tsl.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Outfit:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#dce7f0] text-stone-800 antialiased selection:bg-teal-700/20 selection:text-teal-950 overflow-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
