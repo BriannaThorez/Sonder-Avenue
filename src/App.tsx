@@ -91,7 +91,7 @@ export function App() {
     'citizen.jane-do'
   );
   const [activeDrawer, setActiveDrawer] = useState<ActiveDrawer>('none');
-  const [chatOpen, setChatOpen] = useState<boolean>(true);
+  const [chatPinned, setChatPinned] = useState<boolean>(false);
 
   // Environment & 1:1 Viewport Controls
   const [weatherTempF] = useState<number>(58);
@@ -332,7 +332,7 @@ export function App() {
             ? {
                 ...c,
                 currentAction: 'NAVIGATE_TO',
-                targetSmartObjectAddress: plan.targetRoom!.address,
+                targetAddress: plan.targetRoom!.address,
                 targetPosition: [...finalTarget],
                 activeSpeechBubble: `Heading to Floor ${floorIndex + 1} (${plan.targetRoom!.semanticZoningSlug.split('.').pop()}) via stairwell.`,
               }
@@ -546,12 +546,16 @@ export function App() {
             </svg>
           </HeaderIconButton>
 
-          {/* 10. Toggle Cortical Stream & Dialogue Drawer */}
+          {/* 10. Pin / Unpin Cortical Stream & Dialogue Dock */}
           <HeaderIconButton
-            tooltip="Toggle Cortical Intent Stream & Citizen Dialogue Drawer"
-            active={chatOpen}
-            activeColorClass="bg-teal-700 text-white shadow-xs"
-            onClick={() => setChatOpen((o) => !o)}
+            tooltip={
+              chatPinned
+                ? 'Cortical Chat Dock: Pinned Open (Click to Auto-Collapse on Mouse Leave)'
+                : 'Pin Cortical Chat Dock Open (Currently Pop-Open on Hover)'
+            }
+            active={chatPinned}
+            activeColorClass="bg-amber-600 text-white shadow-xs"
+            onClick={() => setChatPinned((p) => !p)}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.5A8 8 0 1 1 21 12z" />
@@ -573,7 +577,7 @@ export function App() {
         </div>
       </header>
 
-      {/* Contextual Floating Drawers (Only ONE open at a time to keep >=88% viewport clear) */}
+      {/* Contextual Floating Drawers (Docked Top-Left; Only ONE open at a time to keep >=89% viewport clear) */}
       <CharacterFactoryPanel
         isOpen={activeDrawer === 'skinning'}
         onClose={() => setActiveDrawer('none')}
@@ -621,6 +625,7 @@ export function App() {
           citizen={selectedCitizen}
           weatherTempF={weatherTempF}
           onUpdateVirtueWeight={handleUpdateVirtueWeight}
+          onUpdateCitizen={handleUpdateCitizen}
           onClose={() => setActiveDrawer('none')}
         />
       )}
@@ -628,11 +633,13 @@ export function App() {
       {activeDrawer === 'audit' && selectedCitizen && (
         <DcaWorkspacePanel
           citizen={selectedCitizen}
+          activeDrawer={activeDrawer}
+          chatPinned={chatPinned}
           onClose={() => setActiveDrawer('none')}
         />
       )}
 
-      {/* Compact Bottom-Right Cortical Dialogue & Directives Drawer */}
+      {/* Bottom-Right Pop-Open-on-Hover & Thumbtack-Pinnable Cortical Dialogue Dock */}
       {selectedCitizen && (
         <SmartChatPanel
           citizen={selectedCitizen}
@@ -640,8 +647,8 @@ export function App() {
           onSelectCitizen={setSelectedCitizenId}
           onDispatchStimulus={handleDispatchStimulus}
           couplingLogs={couplingLogs}
-          isOpen={chatOpen}
-          onClose={() => setChatOpen(false)}
+          isPinned={chatPinned}
+          onTogglePin={() => setChatPinned((p) => !p)}
         />
       )}
     </div>

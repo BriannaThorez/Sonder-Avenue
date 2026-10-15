@@ -9,25 +9,42 @@ import {
   CHIEF_QA_3_LAYER_SKILL_SPEC,
   invokeChiefQaProgressiveSkill,
   ChiefQaProgressiveReport,
+  runVisualGuiArchitectAudit,
+  VisualGuiAuditReport,
   dispatchSubagentTask,
   SubagentTaskResult,
 } from '../core/deepseekOrchestrator';
-import { FolderTree, CheckCircle2, Cpu, ShieldCheck, X, Play } from 'lucide-react';
+import {
+  FolderTree,
+  CheckCircle2,
+  Cpu,
+  ShieldCheck,
+  LayoutGrid,
+  X,
+  Play,
+} from 'lucide-react';
 
 interface DcaWorkspacePanelProps {
   citizen: CitizenEntity;
+  activeDrawer?: string;
+  chatPinned?: boolean;
   onClose?: () => void;
 }
 
 export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
   citizen,
+  activeDrawer = 'audit',
+  chatPinned = false,
   onClose,
 }) => {
-  const [tab, setTab] = useState<'qa' | 'audit' | 'vfs'>('qa');
+  const [tab, setTab] = useState<'gui' | 'qa' | 'audit' | 'vfs'>('gui');
   const addresses = listCitizenVfsAddresses(citizen);
   const [selectedAddr, setSelectedAddr] = useState<string>(addresses[0] || '');
   const [qaReport, setQaReport] = useState<ChiefQaProgressiveReport>(() =>
     invokeChiefQaProgressiveSkill(3)
+  );
+  const [guiReport, setGuiReport] = useState<VisualGuiAuditReport>(() =>
+    runVisualGuiArchitectAudit({ activeDrawer, chatPinned })
   );
   const [subagentResult, setSubagentResult] = useState<SubagentTaskResult | null>(
     null
@@ -39,6 +56,10 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
   const handleInvokeQaLayer = (layer: 1 | 2 | 3) => {
     const report = invokeChiefQaProgressiveSkill(layer);
     setQaReport(report);
+  };
+
+  const handleRefreshGuiAudit = () => {
+    setGuiReport(runVisualGuiArchitectAudit({ activeDrawer, chatPinned }));
   };
 
   const handleRunDeepSeekAudit = async (
@@ -60,17 +81,17 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
   };
 
   return (
-    <div className="fixed top-12 right-3 z-30 w-[385px] max-h-[calc(100vh-64px)] flex flex-col rounded-xl bg-[#FAF7F2]/95 backdrop-blur-xl border border-stone-300/90 shadow-xl text-stone-800 overflow-hidden">
+    <div className="fixed top-12 left-3 z-30 w-[390px] max-h-[calc(100vh-96px)] flex flex-col rounded-xl bg-[#FAF7F2]/95 backdrop-blur-xl border border-stone-300/90 shadow-xl text-stone-800 overflow-hidden">
       {/* Header */}
       <div className="px-3.5 py-2.5 border-b border-stone-200/90 bg-[#F3EFE6]/90 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-teal-700" />
           <div>
             <h2 className="text-xs font-semibold text-stone-900 leading-tight">
-              DeepSeek-Flash v4.1 Chief Code QA
+              DeepSeek-Flash v4.1 Visual GUI &amp; Code QA
             </h2>
             <p className="text-[10px] text-stone-500 font-mono">
-              DCA.Agent.DeepSeekFlash-v4_1.chief-code-qa • 3-Layer Skill
+              visual-gui-architect · chief-code-qa
             </p>
           </div>
         </div>
@@ -87,6 +108,20 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
       {/* Tabs */}
       <div className="px-3 pt-2 flex gap-1 border-b border-stone-200/80 bg-[#FAF7F2]">
         <button
+          onClick={() => {
+            setTab('gui');
+            handleRefreshGuiAudit();
+          }}
+          className={`flex-1 pb-2 text-[10px] font-semibold border-b-2 transition-colors flex items-center justify-center gap-1 ${
+            tab === 'gui'
+              ? 'border-teal-700 text-teal-800'
+              : 'border-transparent text-stone-500 hover:text-stone-800'
+          }`}
+        >
+          <LayoutGrid className="w-3 h-3" />
+          <span>GUI Audit</span>
+        </button>
+        <button
           onClick={() => setTab('qa')}
           className={`flex-1 pb-2 text-[10px] font-semibold border-b-2 transition-colors flex items-center justify-center gap-1 ${
             tab === 'qa'
@@ -95,7 +130,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
           }`}
         >
           <ShieldCheck className="w-3 h-3" />
-          <span>3-Layer QA Skill</span>
+          <span>3-Layer QA</span>
         </button>
         <button
           onClick={() => setTab('audit')}
@@ -106,7 +141,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
           }`}
         >
           <CheckCircle2 className="w-3 h-3" />
-          <span>Audit Ledger</span>
+          <span>Ledger</span>
         </button>
         <button
           onClick={() => setTab('vfs')}
@@ -122,6 +157,77 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
       </div>
 
       <div className="p-3.5 overflow-y-auto space-y-3 text-xs">
+        {tab === 'gui' && (
+          <div className="space-y-2.5">
+            <div className="p-2.5 rounded-lg bg-white border border-stone-200/90 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-800">
+                  DeepSeek-Flash Visual GUI &amp; Interface Audit
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRefreshGuiAudit}
+                  className="px-2 py-0.5 rounded bg-teal-700 hover:bg-teal-800 text-white text-[10px] font-semibold"
+                >
+                  Re-Scan GUI
+                </button>
+              </div>
+
+              <div className="p-2 rounded bg-[#FAF7F2] border border-stone-200/80 text-[10px] text-stone-700 leading-snug">
+                {guiReport.executiveSummary}
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                <div className="p-1.5 rounded bg-[#FAF7F2] border border-stone-200/80">
+                  <div className="text-stone-500">Orphaned UI</div>
+                  <div className="font-mono font-bold text-emerald-700">0 Active</div>
+                </div>
+                <div className="p-1.5 rounded bg-[#FAF7F2] border border-stone-200/80">
+                  <div className="text-stone-500">Collisions</div>
+                  <div className="font-mono font-bold text-emerald-700">
+                    {guiReport.quadrantCollisionCount} Overlaps
+                  </div>
+                </div>
+                <div className="p-1.5 rounded bg-[#FAF7F2] border border-stone-200/80">
+                  <div className="text-stone-500">3D Clearance</div>
+                  <div className="font-mono font-bold text-teal-800">
+                    {guiReport.viewportClearancePercent}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+                Deconflicted Viewport Surface Map ({guiReport.auditedSurfaces.length})
+              </div>
+              <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                {guiReport.auditedSurfaces.map((surf) => (
+                  <div
+                    key={surf.dcaSurfaceAddress}
+                    className="p-2 rounded-lg bg-white border border-stone-200/90 space-y-0.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-[11px] text-stone-900">
+                        {surf.componentName}
+                      </span>
+                      <span className="text-[9px] font-mono text-emerald-700 font-semibold">
+                        {surf.quadrantAnchor}
+                      </span>
+                    </div>
+                    <div className="text-[9px] font-mono text-teal-800">
+                      {surf.dcaSurfaceAddress}
+                    </div>
+                    <p className="text-[10px] text-stone-600 leading-snug">
+                      {surf.interactionContract}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {tab === 'qa' && (
           <>
             {/* 3-Layer Progressive Disclosure Skill Selector */}
@@ -130,7 +236,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-800">
                   Invoke 3-Layer Progressive Disclosure QA
                 </span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">
+                <span className="font-mono text-[10px] font-bold text-emerald-700">
                   {qaReport.overallComplianceScore}% PASS
                 </span>
               </div>
@@ -165,7 +271,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
                       <span className="font-mono text-[10px] font-semibold text-teal-800">
                         {chk.checkAddress}
                       </span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">
+                      <span className="text-[9px] font-mono text-emerald-800 font-semibold">
                         {chk.metric}
                       </span>
                     </div>
@@ -226,7 +332,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
                   <span className="font-semibold text-[11px] text-stone-900">
                     {item.instructionTitle}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[9px] font-semibold">
+                  <span className="font-mono text-[9px] text-emerald-700 font-semibold">
                     {item.status}
                   </span>
                 </div>
@@ -243,6 +349,44 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
 
         {tab === 'vfs' && (
           <div className="space-y-2">
+            <div className="p-2 rounded-lg bg-white border border-stone-200/90 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold uppercase tracking-wider text-teal-800">
+                  Sandboxed Working Dir (/citizens/{citizen.slug}/)
+                </span>
+                <span className="font-mono text-[9px] text-stone-500">
+                  Isolated Scope
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  'soul.md',
+                  'persona.md',
+                  'memory.md',
+                  'inventory.md',
+                  'ledger.md',
+                  'body-reflex.md',
+                ].map((fileName) => {
+                  const fullPath = `/citizens/${citizen.slug}/${fileName}`;
+                  const isActive = selectedAddr === fullPath;
+                  return (
+                    <button
+                      key={fileName}
+                      type="button"
+                      onClick={() => setSelectedAddr(fullPath)}
+                      className={`py-1 px-1.5 rounded font-mono text-[9px] font-semibold border transition-colors ${
+                        isActive
+                          ? 'bg-teal-700 text-white border-teal-800'
+                          : 'bg-[#FAF7F2] text-stone-700 border-stone-300 hover:bg-stone-200/70'
+                      }`}
+                    >
+                      {fileName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <select
               value={selectedAddr}
               onChange={(e) => setSelectedAddr(e.target.value)}
@@ -256,7 +400,7 @@ export const DcaWorkspacePanel: React.FC<DcaWorkspacePanelProps> = ({
             </select>
             {doc && (
               <pre className="p-2.5 rounded-lg bg-white border border-stone-200/90 font-mono text-[10px] text-stone-700 whitespace-pre-wrap max-h-72 overflow-y-auto">
-                {doc}
+                {doc.markdownBody}
               </pre>
             )}
           </div>

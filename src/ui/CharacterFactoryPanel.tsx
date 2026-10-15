@@ -184,7 +184,7 @@ export const CharacterFactoryPanel: React.FC<CharacterFactoryPanelProps> = ({
   };
 
   return (
-    <div className="fixed top-12 right-3 z-30 w-[340px] max-h-[calc(100vh-64px)] flex flex-col rounded-xl bg-[#FAF7F2]/94 backdrop-blur-xl border border-stone-300/90 shadow-xl text-stone-800 overflow-hidden">
+    <div className="fixed top-12 left-3 z-30 w-[345px] max-h-[calc(100vh-96px)] flex flex-col rounded-xl bg-[#FAF7F2]/95 backdrop-blur-xl border border-stone-300/90 shadow-xl text-stone-800 overflow-hidden">
       {/* Header */}
       <div className="px-3.5 py-2.5 border-b border-stone-200/90 flex items-center justify-between bg-[#F3EFE6]/90">
         <div className="flex items-center gap-2">

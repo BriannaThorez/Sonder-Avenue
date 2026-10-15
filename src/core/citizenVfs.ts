@@ -19,6 +19,11 @@ import {
   verifyTwiceFactoryManifest,
   DcaParsedDocument,
 } from './dcaRuntimeGuard';
+import {
+  CitizenEmbodiedRpgState,
+  createDefaultEmbodiedRpgState,
+  buildSandboxedCitizenWorkingDirectory,
+} from './neurosymbolicAutonomyEngine';
 
 export type PostureSynergy =
   | 'walk-composed'
@@ -170,8 +175,9 @@ export interface CitizenEntity {
   drives: SomaticDrives;
   stressState: StressOperatorState;
 
-  // Memories & Packet Log
+  // Memories, Sandboxed Embodied RPG Inventory/Currency & Packet Log
   memories: CitizenMemoryItem[];
+  embodiedRpg?: CitizenEmbodiedRpgState;
   packetHistory: CorticalIntentPacket[];
   leaseOwnerPeerId: string;
   lastHeartbeatTick: number;
@@ -618,6 +624,7 @@ export function createCanonicalCitizens(localPeerId: string): CitizenEntity[] {
         summary: m.summary,
         emotionalValence: m.emotionalValence,
       })),
+      embodiedRpg: createDefaultEmbodiedRpgState(citizenId, p.slug, p.occupation),
       packetHistory: [],
       leaseOwnerPeerId: localPeerId,
       lastHeartbeatTick: Date.now(),
@@ -627,12 +634,30 @@ export function createCanonicalCitizens(localPeerId: string): CitizenEntity[] {
 
 /**
  * Generates the complete address-resolved VFS file map (`citizen.[id].{mind,body,daemon}.*.md`)
+ * AND the isolated per-citizen sandboxed working directory (`/citizens/<slug>/{soul,persona,memory,inventory,ledger,body-reflex}.md`)
  * for a CitizenEntity in strict compliance with DCR-2.2.13-01 and DCR-2.2.40-01.
  */
 export function buildCitizenVfsFiles(citizen: CitizenEntity): Record<string, DcaParsedDocument> {
   const files: Record<string, DcaParsedDocument> = {};
   const prefix = citizen.id; // e.g., "citizen.jane-do"
   const tickIso = new Date(citizen.lastHeartbeatTick).toISOString();
+
+  // 1. Mount isolated per-citizen sandboxed working directory (/citizens/<slug>/*.md)
+  const sandbox = buildSandboxedCitizenWorkingDirectory(citizen);
+  for (const [, entry] of Object.entries(sandbox.files)) {
+    files[entry.relativePath] = {
+      address: entry.dcaCanonicalAddress,
+      frontmatter: {
+        sandbox_path: entry.relativePath,
+        address: entry.dcaCanonicalAddress,
+        citizen_slug: citizen.slug,
+        last_heartbeat_tick: tickIso,
+      },
+      progressiveSummary: `Sandboxed working file ${entry.relativePath} (${entry.dcaCanonicalAddress})`,
+      bodyMarkdown: entry.markdownContent,
+      rawContent: entry.markdownContent,
+    };
+  }
 
   const registerDoc = (
     address: string,
@@ -1059,7 +1084,13 @@ export async function loadCitizensFromIndexedDb(): Promise<CitizenEntity[] | nul
       const req = store.getAll();
       req.onsuccess = () => {
         if (Array.isArray(req.result) && req.result.length > 0) {
-          resolve(req.result as CitizenEntity[]);
+          const hydrated = (req.result as CitizenEntity[]).map((c) => ({
+            ...c,
+            embodiedRpg:
+              c.embodiedRpg ||
+              createDefaultEmbodiedRpgState(c.id, c.slug, c.occupation),
+          }));
+          resolve(hydrated);
         } else {
           resolve(null);
         }
@@ -1214,6 +1245,11 @@ export function createCitizenFromFactory(
         emotionalValence: 0.65,
       },
     ],
+    embodiedRpg: createDefaultEmbodiedRpgState(
+      citizenId,
+      cleanSlug,
+      input.roleTitle
+    ),
     packetHistory: [],
     leaseOwnerPeerId: 'peer.local.01',
     lastHeartbeatTick: Date.now(),

@@ -26,6 +26,7 @@ import {
   initializeBremertonStaticColliders,
 } from '../core/collisionPhysicsEngine';
 import { multiFloorNavigationRegistry } from '../core/generativeShapeGrammarEngine';
+import { evaluateSubconsciousNeurosymbolicAutonomy } from '../core/neurosymbolicAutonomyEngine';
 
 // Pre-initialize static world colliders
 initializeBremertonStaticColliders();
@@ -461,8 +462,16 @@ export function stepCitizenDaemons10Hz(
       ),
     };
 
-    const nextStress = computeStressOperator(
+    // Execute Thinktank 10Hz Subconscious Self-Preserving & Pocket/Backpack Economy Solver (0ms LLM-independent)
+    const autonomyEval = evaluateSubconsciousNeurosymbolicAutonomy(
+      c,
       nextDrives,
+      weatherTempF,
+      Date.now()
+    );
+
+    const nextStress = computeStressOperator(
+      autonomyEval.updatedDrives,
       weatherTempF,
       c.stressState.hysteresisCooldownTicks
     );
@@ -471,7 +480,12 @@ export function stepCitizenDaemons10Hz(
     const activeInteriorRoom = multiFloorNavigationRegistry.queryRoomAtWorldPosition(nextPos);
     const zoningThought = activeInteriorRoom
       ? `[Reflexive Zoning: ${activeInteriorRoom.semanticZoningSlug} • Floor ${activeInteriorRoom.storyIndex + 1}] ${activeInteriorRoom.reflexiveAffordanceAction}`
-      : c.lastCognitiveThought;
+      : autonomyEval.updatedRpgState.subconsciousGoalReason || c.lastCognitiveThought;
+
+    // Couple carried backpack/pocket mass (kg) into spinal flexion (Torso.waist-joint)
+    const carriedMassPitchOffset = Number(
+      (autonomyEval.updatedRpgState.totalCarriedMassKg * 1.15).toFixed(2)
+    );
 
     let updatedCitizen: CitizenEntity = {
       ...c,
@@ -480,8 +494,13 @@ export function stepCitizenDaemons10Hz(
       rotationY: nextRotY,
       activePosture: nextPosture,
       carryingPropSlug: nextCarrying,
-      drives: nextDrives,
+      drives: autonomyEval.updatedDrives,
       stressState: nextStress,
+      embodiedRpg: autonomyEval.updatedRpgState,
+      jointOverrides: {
+        ...c.jointOverrides,
+        waistPitchDeg: Number((tonus.waistPitchRestDeg + carriedMassPitchOffset).toFixed(1)),
+      },
       speechBubbleTimer: nextBubbleTimer,
       activeSpeechBubble: nextBubbleTimer > 0 ? c.activeSpeechBubble : null,
       lastCognitiveThought: zoningThought,
